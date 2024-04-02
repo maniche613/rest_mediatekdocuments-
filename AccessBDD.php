@@ -23,7 +23,27 @@ class AccessBDD {
             throw $e;
         }
     }
-
+    /**
+     * récupération d'une ligne d'une table
+     * @param string $table nom de la table
+     * @param string $id id de la ligne à récupérer
+     * @return ligne de la requete correspondant à l'id
+     */
+    public function selectOne($table, $id) {
+         if($this->conn != null){
+                switch($table){ 
+                    case "utilisateur":
+                        return $this->selectUtilisateurs($id);
+                    default:
+                        // cas d'un select portant sur une table simple			
+                        $param = array(
+                            "id" => $id
+                        );
+                        return $this->conn->query("select * from $table where id=:id;", $param);	
+                }
+            }
+    }
+            
     /**
      * récupération de toutes les lignes d'une table
      * @param string $table nom de la table
@@ -46,6 +66,8 @@ class AccessBDD {
                 case "etat" :
                     // select portant sur une table contenant juste id et libelle
                     return $this->selectTableSimple($table);
+                case "utilisateur" :
+                    return $this->selectAllUtilisateurs();    
                 default:
                     // select portant sur une table, sans condition
                     return $this->selectTable($table);
@@ -172,6 +194,12 @@ class AccessBDD {
         $req .= "order by e.dateAchat DESC";		
         return $this->conn->query($req, $param);
     }		
+    
+    public function selectAllUtilisateurs(){
+        $req = "Select u.id, u.login, u.password, u.idService, s.type ";
+        $req .= "from utilisateur u join service s on u.idService=s.id";
+        return $this->conn->query($req);
+    }
 
     /**
      * suppresion d'une ou plusieurs lignes dans une table

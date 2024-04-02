@@ -57,15 +57,11 @@ class ConnexionPDO {
                     $requetePrepare->bindParam(":$key", $value);
                 }
             }
-            $reponse = $requetePrepare->execute();
-            if($reponse == true){
-                return $requetePrepare->fetchAll(PDO::FETCH_ASSOC);
-            }else{
-                return false;
-            } 
+            $requetePrepare->execute();				
+            return $requetePrepare->fetchAll(PDO::FETCH_ASSOC);
         }catch(Exception $e){
             return null;
         }		
     }
-	
+
 }
