@@ -66,6 +66,8 @@ class AccessBDD {
                 case "etat" :
                     // select portant sur une table contenant juste id et libelle
                     return $this->selectTableSimple($table);
+                case "abonnements" :
+                    return $this->selectAllAbonnements();    
                 case "utilisateur" :
                     return $this->selectAllUtilisateurs();    
                 default:
@@ -178,6 +180,18 @@ class AccessBDD {
         $req .= "order by titre ";
         return $this->conn->query($req);
     }	
+    
+     /**
+     * récupération de toutes les lignes de la table Revue et les tables associées
+     * @return lignes de la requete
+     */
+    public function selectAllAbonnements(){
+        $req = "Select a.id, c.dateCommande, c.montant, a.dateFinAbonnement, a.idRevue, d.titre ";
+        $req .= "from abonnement a join commande c on c.id=a.id ";
+        $req .= "join document d on d.id=a.idRevue ";
+        $req .= "order by c.dateCommande DESC";
+        return $this->conn->query($req);
+    }
 
     /**
      * récupération de tous les exemplaires d'une revue
@@ -200,6 +214,23 @@ class AccessBDD {
         $req .= "from utilisateur u join service s on u.idService=s.id";
         return $this->conn->query($req);
     }
+    
+    /**
+     * récupération de toutes les commandes d'un livre
+     * @param string $id id du livre
+     * @return lignes de la requete
+     */
+    public function selectAllCommandesLivre($id) {
+        $param = array(
+            "id" => $id
+        );
+        $req = "Select c.id, d.dateCommande, d.montant, c.nbExemplaire, c.idLivreDvd, c.idSuivi, s.libelle as suivi ";
+        $req .= "from commandedocument c join commande d on c.id=d.id ";
+        $req .= "join suivi s on s.id=c.idSuivi ";
+        $req .= "where c.idLivreDvd = :id ";
+        $req .= "order by d.dateCommande DESC";
+        return $this->conn->query($req, $param);
+    }
 
     /**
      * suppresion d'une ou plusieurs lignes dans une table
@@ -220,6 +251,65 @@ class AccessBDD {
         }else{
             return null;
         }
+    }
+    
+    public function deleteCommandeDocument($table, $champs) {
+        $params = array(
+            "id" => $champs["Id"],
+            "nbExemplaire" => $champs["NbExemplaire"],
+            "idLivreDvd" => $champs["IdLivreDvd"],
+            "idSuivi" => $champs["IdSuivi"]
+        );
+        $requete = "delete from $table where ";
+        foreach ($params as $key => $value) {
+            $requete .= "$key=:$key and ";
+        }
+        // (enlève le dernier and)
+        $requete = substr($requete, 0, strlen($requete) - 5);
+        $result1 = $this->conn->execute($requete, $params);
+        $params = array(
+            "id" => $champs["Id"],
+            "dateCommande" => $champs["DateCommande"],
+            "montant" => $champs["Montant"]
+        );
+        $requete = "delete from commande where ";
+        foreach ($params as $key => $value) {
+            $requete .= "$key=:$key and ";
+        }
+        // (enlève le dernier and)
+        $requete = substr($requete, 0, strlen($requete) - 5);
+        $result2 = $this->conn->execute($requete, $params);
+        //retourne les deux
+        return $result1 && $result2;
+    }
+    
+    public function deleteAbonnement($table, $champs) {
+        $params = array(
+            "id" => $champs["Id"],
+            "dateFinAbonnement" => $champs["DateFinAbonnement"],
+            "idRevue" => $champs["IdRevue"]
+        );
+        $requete = "delete from $table where ";
+        foreach ($params as $key => $value) {
+            $requete .= "$key=:$key and ";
+        }
+        // (enlève le dernier and)
+        $requete = substr($requete, 0, strlen($requete) - 5);
+        $result1 = $this->conn->execute($requete, $params);
+        $params = array(
+            "id" => $champs["Id"],
+            "dateCommande" => $champs["DateCommande"],
+            "montant" => $champs["Montant"]
+        );
+        $requete = "delete from commande where ";
+        foreach ($params as $key => $value) {
+            $requete .= "$key=:$key and ";
+        }
+        // (enlève le dernier and)
+        $requete = substr($requete, 0, strlen($requete) - 5);
+        $result2 = $this->conn->execute($requete, $params);
+        //retourne les deux
+        return $result1 && $result2;
     }
 
     /**
