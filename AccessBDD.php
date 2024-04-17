@@ -253,6 +253,12 @@ class AccessBDD {
         }
     }
     
+    /**
+     * suppresion d'une ou plusieurs lignes dans CommandeDocument puis dans Commande
+     * @param string $table nom de la table commandedocument
+     * @param array $champs nom et valeur de chaque champs
+     * @return true si la suppression a fonctionné
+     */
     public function deleteCommandeDocument($table, $champs) {
         $params = array(
             "id" => $champs["Id"],
@@ -283,6 +289,12 @@ class AccessBDD {
         return $result1 && $result2;
     }
     
+    /**
+     * suppresion d'une ou plusieurs lignes dans Abonnement puis dans Commande
+     * @param string $table nom de la table commandedocument
+     * @param array $champs nom et valeur de chaque champs
+     * @return true si la suppression a fonctionné
+     */
     public function deleteAbonnement($table, $champs) {
         $params = array(
             "id" => $champs["Id"],
