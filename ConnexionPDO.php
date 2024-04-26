@@ -6,14 +6,13 @@ class ConnexionPDO {
 
     private $conn = null;
 
-    /**
-     * constructeur privé : connexion à la BDD
-     * @param string $login 
-     * @param string $mdp
-     * @param string $bd
-     * @param string $serveur
-     * @param int $port
-     */
+    public $login="dbu5565010";
+    public $mdp="()ApiMediatek@67";
+    public $bd="dbs12819137";
+    public $serveur="localhost";
+    public $port="3306";	
+    public $conn = null;
+     
     public function __construct($login, $mdp, $bd, $serveur, $port){
         try {
             $this->conn = new PDO("mysql:host=$serveur;dbname=$bd;port=$port", $login, $mdp);
