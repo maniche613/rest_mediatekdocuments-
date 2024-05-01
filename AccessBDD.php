@@ -31,9 +31,15 @@ class AccessBDD {
      */
     public function selectOne($table, $id) {
          if($this->conn != null){
-                switch($table){ 
-                    case "utilisateur":
-                        return $this->selectUtilisateurs($id);
+               switch($table){
+                case "exemplaire" :
+                    return $this->selectAllExemplairesRevue($id);
+                case "dvd" :
+                    return $this->selectAllDvd($id);
+                case "revue" :
+                    return $this->selectAllRevues($id);
+                case "utilisateur":
+                    return $this->selectUtilisateur($id);
                     default:
                         // cas d'un select portant sur une table simple			
                         $param = array(
@@ -330,27 +336,90 @@ class AccessBDD {
      * @param array $champs nom et valeur de chaque champs de la ligne
      * @return true si l'ajout a fonctionné
      */	
-    public function insertOne($table, $champs){
-        if($this->conn != null && $champs != null){
-            // construction de la requête
-            $requete = "insert into $table (";
-            foreach ($champs as $key => $value){
-                $requete .= "$key,";
+   public function insertOne($table, $champs) {
+        if ($this->conn != null && $champs != null) {
+            switch ($table) {
+                case "commandedocument" :
+                    return $this->insertOneCommandeDocument($table, $champs);
+                case "abonnement" :
+                    return $this->insertOneAbonnement($table, $champs);
+                default :
+                    // construction de la requête
+                    $requete = "insert into $table (";
+                    foreach ($champs as $key => $value) {
+                        $requete .= "$key,";
+                    }
+                    // (enlève la dernière virgule)
+                    $requete = substr($requete, 0, strlen($requete) - 1);
+                    $requete .= ") values (";
+                    foreach ($champs as $key => $value) {
+                        $requete .= ":$key,";
+                    }
+                    // (enlève la dernière virgule)
+                    $requete = substr($requete, 0, strlen($requete) - 1);
+                    $requete .= ");";
+                    return $this->conn->execute($requete, $champs);
             }
-            // (enlève la dernière virgule)
-            $requete = substr($requete, 0, strlen($requete)-1);
-            $requete .= ") values (";
-            foreach ($champs as $key => $value){
-                $requete .= ":$key,";
-            }
-            // (enlève la dernière virgule)
-            $requete = substr($requete, 0, strlen($requete)-1);
-            $requete .= ");";	
-            return $this->conn->execute($requete, $champs);		
-        }else{
+        } else {
             return null;
         }
     }
+    
+    /**
+     * ajout d'une ligne dans Commande puis CommandeDocument
+     * @param string $table nom de la table CommandeDocument
+     * @param array $champs nom et valeur de chaque champs de la ligne
+     * @return true si l'ajout a fonctionné
+     */
+    public function insertOneCommandeDocument($table, $champs) {
+        // insertion commande
+        $param = array(
+            "id" => $champs["Id"],
+            "dateCommande" => $champs["DateCommande"],
+            "montant" => $champs["Montant"]
+        );
+        // construction de la requête
+        $requete = "insert into commande (";
+        foreach ($param as $key => $value) {
+            $requete .= "$key,";
+        }
+        // (enlève la dernière virgule)
+        $requete = substr($requete, 0, strlen($requete) - 1);
+        $requete .= ") values (";
+        foreach ($param as $key => $value) {
+            $requete .= ":$key,";
+        }
+        // (enlève la dernière virgule)
+        $requete = substr($requete, 0, strlen($requete) - 1);
+        $requete .= ");";
+        $result1 = $this->conn->execute($requete, $param);
+
+        // insertion commandedocument
+        $param2 = array(
+            "id" => $champs["Id"],
+            "nbExemplaire" => $champs["NbExemplaire"],
+            "idLivreDvd" => $champs["IdLivreDvd"],
+            "idSuivi" => $champs["IdSuivi"]
+        );
+        // construction de la requête
+        $requete2 = "insert into $table (";
+        foreach ($param2 as $key => $value) {
+            $requete2 .= "$key,";
+        }
+        // (enlève la dernière virgule)
+        $requete2 = substr($requete2, 0, strlen($requete2) - 1);
+        $requete2 .= ") values (";
+        foreach ($param2 as $key => $value) {
+            $requete2 .= ":$key,";
+        }
+        // (enlève la dernière virgule)
+        $requete2 = substr($requete2, 0, strlen($requete2) - 1);
+        $requete2 .= ");";
+        $result2 = $this->conn->execute($requete2, $param2);
+        //retourne les deux
+        return $result1 && $result2;
+    }
+
 
     /**
      * modification d'une ligne dans une table
