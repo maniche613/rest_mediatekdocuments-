@@ -38,16 +38,16 @@ class Controle{
     /**
      * requete arrivée en GET (select)
      * @param string $table nom de la table
-     * @param type $champs nom et valeur des champs de recherche
+     * @param string $id valeur de l'id
      */
-    public function get($table, $champs){
+    public function get($table, $id=null){
         $result = null;
-        if ($champs==""){
+        if ($id==null){
             $result = $this->accessBDD->selectAll($table);
         }else{
-            $result = $this->accessBDD->select($table, $champs);
+            $result = $this->accessBDD->selectOne($table, $id);
         }
-        if (gettype($result) != "array" && ($result == false || $result == null)){
+        if ($result == null || $result == false){
             $this->reponse(400, "requete invalide");
         }else{	
             $this->reponse(200, "OK", $result);

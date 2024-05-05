@@ -28,7 +28,7 @@ class ConnexionPDO {
      * @param string $requete
      * @param array $param
      * @return résultat requête (booléen)
-     */
+     */ 
     public function execute($requete, $param=null){
         try{	
             $requetePrepare = $this->conn->prepare($requete);
@@ -63,5 +63,5 @@ class ConnexionPDO {
             return null;
         }		
     }
-
+	
 }
